@@ -54,18 +54,18 @@
     --theme-h6-line-height: var(--theme-line-height-base);
 
     /* Neutral color variables */
-    --theme-color-neutral-0: var(--settings-color-neutral-0, #fff);
-    --theme-color-neutral-05: var(--settings-color-neutral-05, #f2f2f2);
-    --theme-color-neutral-10: var(--settings-color-neutral-10, #e6e6e6);
+    --theme-color-neutral-0: yellow;
+    --theme-color-neutral-05: var(--settings-color-neutral-05, #e3cc6c);
+    --theme-color-neutral-10: var(--settings-color-neutral-10, #f1d707);
     --theme-color-neutral-15: var(--settings-color-neutral-15, #d9d9d9);
-    --theme-color-neutral-20: var(--settings-color-neutral-20, #cccccc);
+    --theme-color-neutral-20: var(--settings-color-neutral-20, #8d8104);
     --theme-color-neutral-30: var(--settings-color-neutral-30, #b3b3b3);
-    --theme-color-neutral-55: var(--settings-color-neutral-55, #737373);
+    --theme-color-neutral-55: var(--settings-color-neutral-55, #a89f41);
     --theme-color-neutral-60: var(--settings-color-neutral-60, #666666);
-    --theme-color-neutral-70: var(--settings-color-neutral-70, #4d4d4d);
+    --theme-color-neutral-70: var(--settings-color-neutral-70, #3f3e03);
     --theme-color-neutral-80: var(--settings-color-neutral-80, #303030);
     --theme-color-neutral-90: var(--settings-color-neutral-90, #1b1b1b);
-    --theme-color-neutral-100: var(--settings-color-neutral-100, #000);
+    --theme-color-neutral-100: var(--settings-color-neutral-100, #ffe218);
 
     /* Alpha color variables */
     --theme-color-body-70-alpha: var(--settings-color-background-70-alpha, rgba(255, 255, 255, 30%));
@@ -99,16 +99,16 @@
 
     /* Contextual text color variables */
     --theme-info-text-color: var(--settings-color-info-text, var(--theme-color-neutral-60));
-    --theme-emphasis-text-color: var(--settings-color-emphasis-text, #005ad9);
-    --theme-success-text-color: var(--settings-color-success-text, #007d2a);
-    --theme-warning-text-color: var(--settings-color-warning-text, #945c25);
-    --theme-critical-text-color: var(--settings-color-critical-text, #bf0020);
-    --theme-sale-text-color: var(--settings-color-sale-text, #990838);
+    --theme-emphasis-text-color: var(--settings-color-emphasis-text, #bda735);
+    --theme-success-text-color: var(--settings-color-success-text, #face0c);
+    --theme-warning-text-color: var(--settings-color-warning-text, #756a31);
+    --theme-critical-text-color: var(--settings-color-critical-text, #ffde0e);
+    --theme-sale-text-color: var(--settings-color-sale-text, #7a5e0c);
 
     /* Contextual background color variables */
     --theme-info-bg-color: var(--settings-color-info-bg, var(--theme-color-neutral-05));
     --theme-emphasis-bg-color: var(--settings-color-emphasis-bg, #e5f0ff);
-    --theme-warning-bg-color: var(--settings-color-warning-bg, #fff2e5);
+    --theme-warning-bg-color: var(--settings-color-warning-bg, #ffffe5);
     --theme-success-bg-color: var(--settings-color-success-bg, #e5ffee);
     --theme-critical-bg-color: var(--settings-color-critical-bg, #ffe5ea);
 
