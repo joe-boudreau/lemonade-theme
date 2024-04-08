@@ -1,0 +1,51 @@
+.ui-row {
+    position: relative;
+    display: flex;
+    gap: var(--space-x2);
+    align-items: center;
+    font-size: var(--theme-font-size-minus-1);
+    line-height: var(--theme-font-size-minus-1-line-height);
+    cursor: pointer;
+}
+
+.ui-row__icon,
+.ui-row__label,
+.ui-row__sublabel,
+.ui-row__side {
+    position: relative;
+}
+
+.ui-row__label {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    font-weight: var(--theme-font-weight-medium);
+}
+
+.ui-row__sublabel {
+    font-weight: var(--theme-font-weight-light);
+    color: var(--theme-body-text-color-subtle);
+}
+
+.ui-row::before {
+    position: absolute;
+    top: calc(var(--space-half) * -1);
+    left: calc(var(--space-x1_5) * -1);
+    display: block;
+    width: calc(100% + calc(var(--space-x1_5) * 2));
+    height: calc(100% + calc(var(--space-half) * 2));
+    content: '';
+    background-color: var(--theme-color-neutral-05);
+    border-radius: var(--theme-border-radius-card);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.ui-row:hover::before {
+    opacity: 1;
+}
+
+.ui-row__side {
+    display: flex;
+    gap: var(--space-x2);
+}

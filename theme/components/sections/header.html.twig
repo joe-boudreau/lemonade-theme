@@ -1,0 +1,346 @@
+{{ register_asset('css/sections/header.css') }}
+{{ register_asset('css/components/search.css') }}
+{{ register_asset('js/sections/header.js', { defer: false }) }}
+{{ register_asset('js/ui/nested-menu.js', { defer: false }) }}
+{{ register_asset('js/components/search.js', { defer: false }) }}
+{{ register_asset('js/components/mini-cart.js', { defer: false }) }}
+
+{# Create the data that we'll use for the Alpine header component #}
+
+{% set formattedLinks = [] %}
+
+{# Create category links #}
+{% set categoryLinks = [] %}
+{% for category in category_list({ pagination: { page_size: 3 } }) %}
+    {% set categoryLinks = categoryLinks|merge([{
+        label: category.name,
+        type: 'category',
+        id: category.square_online_id,
+        menu_image_url: category.images[0].absolute_url,
+    }]) %}
+{% endfor %}
+
+{% set links = categoryLinks|merge(nav_links) %}
+
+{% if links is empty %}
+    {% set links = config.header.placeholder_nav_links %}
+{% endif %}
+
+{% for link in links %}
+    {% set menuImageUrl = link.menu_image_url %}
+    {% if link.type != 'category' and link.menu_image_url %}
+        {% set menuImageUrl = link.menu_image_url|asset_url %}
+    {% endif %}
+
+    {% set topLevelLink = {
+        menu_image_url: menuImageUrl,
+        title: link.label,
+        url: link(link),
+    } %}
+
+    {% if menuImageUrl is not empty %}
+        {% set topLevelLink = topLevelLink|merge({ menu_image_url: menuImageUrl }) %}
+    {% endif %}
+
+    {% set linkChildren = link.children %}
+
+    {# Create sub category links #}
+    {% if link.type == 'category' %}
+        {% set subCategoryLinks = [] %}
+        {% set subCategories = category_hierarchy(null, link.id) %}
+
+        {% for subCategory in subCategories %}
+            {% set subCategoryChildren = [] %}
+
+            {% for grandSubCategory in subCategory.children %}
+                {% set subCategoryChildren = subCategoryChildren|merge([{
+                    label: grandSubCategory.name,
+                    type: 'category',
+                    id: grandSubCategory.square_online_id,
+                }]) %}
+            {% endfor %}
+
+            {% set subCategoryLinks = subCategoryLinks|merge([{
+                label: subCategory.name,
+                type: 'category',
+                id: subCategory.square_online_id,
+                children: subCategoryChildren,
+            }]) %}
+        {% endfor %}
+
+        {% set linkChildren = subCategoryLinks %}
+    {% endif %}
+
+    {% if linkChildren is not empty %}
+        {% set children = {} %}
+
+        {% for child_link in linkChildren %}
+            {% set formattedChildLink = {
+                title: child_link.label,
+                url: link(child_link),
+            } %}
+
+            {% if child_link.children is not empty %}
+                {% set grandchildren = {} %}
+                {% for grandchild_link in child_link.children %}
+                    {% set formattedGrandchildLink = {
+                        (grandchild_link.label): {
+                            title: grandchild_link.label,
+                            url: link(grandchild_link),
+                        }
+                    } %}
+                    {% set grandchildren = grandchildren|merge(formattedGrandchildLink) %}
+                {% endfor %}
+
+                {% set formattedChildLink = formattedChildLink|merge({ children: grandchildren }) %}
+            {% endif %}
+
+            {% set children = children|merge({ (child_link.label): formattedChildLink }) %}
+        {% endfor %}
+
+        {% set topLevelLink = topLevelLink|merge({ children: children }) %}
+
+    {% endif %}
+
+    {% set formattedLinks = formattedLinks|merge({ (link.label): topLevelLink }) %}
+{% endfor %}
+
+<script id="nav-links-data" type="application/json">
+    {
+        "navLinks": {{ formattedLinks | json_encode() }}
+    }
+</script>
+
+<div
+    x-data="header('nav-links-data')"
+    class="site-header"
+    :class="headerClasses"
+    x-show="isHeaderVisible"
+    x-transition:enter="slide-down-enter-active"
+    x-transition:enter-start="slide-down-enter-from"
+    x-transition:enter-end="slide-down-enter-to"
+    x-transition:leave="slide-down-leave-active"
+    x-transition:leave-start="slide-down-leave-from"
+    x-transition:leave-end="slide-down-leave-to"
+    @scroll.window.throttle.50ms="onScroll"
+    @resize.window="storeOwnHeight"
+>
+    {% if announcement_bar_show %}
+        <div class="site-topbar">
+            <div class="site-topbar__inner">
+                <div class="site-topbar__dummy"></div>
+                <span class="site-topbar__message">
+                    {{ announcement_bar_text }}
+                    {% if announcement_bar_link %}
+                        <a
+                            class="site-topbar__link"
+                            href="{{ link(announcement_bar_link) }}"
+                        >
+                            {{ announcement_bar_link.label }}
+                        </a>
+                    {% endif %}
+                </span>
+                <div class="site-topbar__info">
+                    {% embed 'partials/ui/icon' with { name: 'location_on', iconClasses: 'site-topbar__icon' } %}
+                        {% block attributes %}
+                            x-show="$store.global.customerLocale.postal_code"
+                        {% endblock %}
+                    {% endembed %}
+                    <span
+                        class="site-topbar__zipcode"
+                        x-show="$store.global.customerLocale.postal_code"
+                        x-text="$store.global.customerLocale.postal_code"
+                    ></span>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <div class="site-header__inner container">
+        <div class="site-header__inner--row row">
+            <template x-if="!$store.global.isDesktop()">
+                <div
+                    class="site-header__menu-button-wrapper col"
+                    col-xs-3 col-sm-3 col-md-3
+                >
+                    {{ include('partials/ui/button', {
+                        variant: 'text',
+                        size: 'small',
+                        icon: 'menu',
+                        iconAlt: 'components.header.menu_icon.alt'|localize,
+                        action: 'openMobileMenu'
+                    }) }}
+                </div>
+            </template>
+
+            <div
+                class="site-header__logo-wrapper col"
+                col-xs-6 col-sm-6 col-md-2 col-lg-2
+            >
+                <h1>
+                    <a class="site-logo" href="/">
+                        {{ square.site.title }}
+                    </a>
+                </h1>
+            </div>
+
+            <nav
+                x-show="$store.global.isDesktop()"
+                x-transition:enter.delay.100ms
+                x-transition:leave.delay.0ms
+                class="site-header__nav col"
+                col-sm-1 col-md-8 col-lg-8
+            >
+                <ul class="site-header__nav-linklist">
+                    {% for link in formattedLinks %}
+                        <li
+                            @mouseenter="onMouseEnter('{{ link.title }}')"
+                            @mouseleave="onMouseLeave"
+                        >
+                            <a
+                                class="site-header__nav-link"
+                                :class="currentlyDisplayedLink?.title === '{{ link.title }}' && 'is-active' "
+                                href="{{ link.url }}"
+                                @focus="onMouseEnter('{{ link.title }}')"
+                                @blur="onMouseLeave"
+                                @keydown.tab="onKeyboardTab"
+                            >
+                                {{ link.title }}
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </nav>
+
+            <div
+                class="site-header__utility-buttons col"
+                col-xs-3 col-sm-3 col-md-2 col-lg-2
+            >
+                {{ include('partials/ui/button', {
+                    variant: 'text',
+                    size: 'small',
+                    icon: 'search',
+                    iconAlt: 'components.header.search_icon.alt'|localize,
+                    action: 'openSearch',
+                    buttonClasses: 'site-header__utility-button site-header__utility-button--search',
+                })}}
+
+                {# required for Search Dialog #}
+                <template x-if="!dialogExists()">
+                    <template x-teleport="body">
+                        {{ include('partials/ui/dialog') }}
+                    </template>
+                </template>
+
+                <script id="header-mini-cart-data" type="application/json">
+                    {{ {
+                        cartUrl: link({ type: 'cart' }),
+                        dropdownId: 'mini-cart-tooltip',
+                    }|json_encode }}
+                </script>
+
+                <div
+                    x-data="headerMiniCart('header-mini-cart-data')"
+                    class="mini-cart__wrapper"
+                    @click.outside="closeMiniCart"
+                >
+                    {% embed 'partials/ui/button' with {
+                        variant: 'text',
+                        size: 'small',
+                        icon: 'shopping_bag',
+                        iconAlt: 'components.header.cart_icon.alt'|localize,
+                        action: 'goToCartPage()',
+                        buttonClasses: 'site-header__utility-button site-header__utility-button--cart',
+                    } %}
+                        {% block attributes %}
+                            x-ref="miniCartTrigger"
+                            @mouseenter.debounce="openMiniCart"
+                            @mouseleave.debounce.500ms="onMiniCartButtonBlur"
+                            @focus.debounce="onMiniCartFocus"
+                        {% endblock %}
+                        {% block content %}
+                            <span
+                                x-show="$store.cart.miniCartItemsTotal > 0"
+                                class="site-header__utility-button--cart-total"
+                                x-text="$store.cart.miniCartItemsTotal"
+                            ></span>
+                        {% endblock %}
+                    {% endembed %}
+                    {% embed 'partials/ui/tooltip' with {
+                        id: 'mini-cart-tooltip',
+                        isDropdown: true,
+                    } %}
+                        {% block content %}
+                            {# Placeholder for the mini cart #}
+                            <div id="miniCart"></div>
+                        {% endblock %}
+                    {% endembed %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <hr class="site-header__underline" x-show="showUnderline"></hr>
+
+    {{ include('partials/components/mega-menu') }}
+</div>
+
+<template x-teleport="body">
+    <div
+        x-show="$store.global.isMegaMenuVisible"
+        class="ui-megamenu-overlay"
+        x-transition:enter="fade-enter-active"
+        x-transition:enter-start="fade-enter-from"
+        x-transition:enter-end="fade-enter-to"
+        x-transition:leave="fade-leave-active"
+        x-transition:leave-start="fade-leave-from"
+        x-transition:leave-end="fade-leave-to">
+    </div>
+</template>
+
+{% schema %}
+    {
+        "announcement_bar_show": {
+            "type": "bool"
+        },
+        "announcement_bar_text": {
+            "type": "string"
+        },
+        "announcement_bar_link": {
+            "type": "link",
+            "optional": "true"
+        },
+        "nav_links": {
+            "type": "link-list"
+        }
+    }
+{% endschema %}
+
+{% editor %}
+{
+    "name": "Header",
+    "controls": [
+        {
+            "control": "toggle",
+            "label": "Show announcement bar",
+            "value": {
+                "$ref": "#/schema/announcement_bar_show"
+            }
+        },
+        {
+            "control": "input",
+            "label": "Announcement bar",
+            "value": {
+                "$ref": "#/schema/announcement_bar_text"
+            }
+        },
+        {
+            "control": "link-chooser",
+            "label": "Announcement link",
+            "value": {
+                "$ref": "#/schema/announcement_bar_link"
+            }
+        }
+    ]
+}
+{% endeditor %}

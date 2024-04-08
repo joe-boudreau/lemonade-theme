@@ -1,0 +1,28 @@
+{% extends "layouts/theme" %}
+
+{% block main_content %}
+
+<script type="application/json" id="header-optional-config">
+    {{ { showUnderline: false }|json_encode  }}
+</script>
+
+{{ register_asset('css/templates/pages/home.css') }}
+
+<div class="home-page">
+    {{ section('home/banner', banner) }}
+    {{ section_container(main, 'Main sections') }}
+</div>
+
+
+{% endblock %}
+
+{% schema %}
+{
+    "banner": {
+        "type": "section"
+    },
+    "main": {
+        "type": "section-list"
+    }
+}
+{% endschema %}

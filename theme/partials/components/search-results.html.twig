@@ -1,0 +1,86 @@
+{# If no query is passed, we'll default to popular items #}
+{% if query is not defined %}
+    {% set items = popular_items({ pagination: { page_size: 4 } }) %}
+{% endif %}
+
+{# Max four items #}
+{% set items = items|slice(0, 4) %}
+
+{% if query is not defined or (query is defined and items|length > 0) %}
+    <div class="search-results row">
+        <div
+            class="search-results__category-list-wrapper col"
+            col-xs-12 col-sm-12 col-md-3
+        >
+            {% set item_categories = [] %}
+            {% for item in items %}
+                {% set category = item.categories[0] %}
+                {% set categoryExists = item_categories|filter((c) => c.square_online_id == category.square_online_id) %}
+                {% if category.square_online_id and categoryExists == false %}
+                    {% set item_categories = item_categories|merge([category]) %}
+                {% endif %}
+            {% endfor %}
+            <p class="search-results__category-list-header">
+                {% if (query is not defined) and (item_categories is not empty) %}
+                    {{ 'components.search.suggested_searches'|localize }}
+                {% elseif query is defined %}
+                    {{ 'components.search.top_results'|localize }}
+                {% endif %}
+            </p>
+            <ul class="search-results__category-list">
+                {% for category in item_categories %}
+                    <li class="search-results__category-list-item">
+                        <a class="search-results__category-link" href="{{ category_link(category.square_online_id) }}">
+                            {{ category.name }}
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+        <div
+            class="search-results__tiles-list-wrapper col"
+            col-xs-12 col-sm-12 col-md-8 offset-md-1
+        >
+            <p class="search-results__tiles-list-header">
+                {% if query is not defined %}
+                    {{ 'components.search.popular_items'|localize }}
+                {% else %}
+                    {{ 'components.search.similar_items'|localize }}
+                {% endif %}
+            </p>
+            <div class="search-results__tiles-list">
+                {{ include('partials/components/collection/list',
+                    {
+                        items,
+                        layout: 'carousel',
+                        hideHover: true
+                    })
+                }}
+            </div>
+        </div>
+    </div>
+{% else %}
+    <div class="search-results search-results--empty">
+        {{ 'components.search.empty'|localize({ query }) }}
+    </div>
+{% endif %}
+
+<div
+    x-show="isSearching"
+    class="ui-loader--overlay"
+>
+    {{ include('partials/ui/loader') }}
+</div>
+
+{% schema %}
+{
+    "items": {
+        "type": "array",
+        "optional": true
+    },
+    "query": {
+        "type": "string",
+        "optional": true
+    }
+}
+{% endschema %}

@@ -1,0 +1,90 @@
+{% if request.async == true %}
+    <link href="{{ 'css/form/stepper.css' | asset_url }}" rel="stylesheet" />
+    <script src="{{ 'js/form/stepper.js' | asset_url }}"></script>
+{% else %}
+    {{ register_asset('css/form/stepper.css') }}
+    {{ register_asset('js/form/stepper.js', { defer: false }) }}
+{% endif %}
+
+{% set stepperId = 'stepper-' ~ random() %}
+{% set defaultValue = value|default(1) %}
+{% set labelId = 'stepper-label-' ~ random() %}
+{% set minValue = min|default(1) %}
+{% set maxValue = max|default(999) %}
+
+{% if request.async == true %}
+<template
+    x-if="isStepperFormReady"
+    x-data="{ isStepperFormReady: false }"
+    x-init="await Utils.waitUntil(() => window.onStepperFormReady); window.onStepperFormReady(); isStepperFormReady = true"
+>
+{% endif %}
+
+<div
+    x-data="{ ...stepperForm({{ minValue }}, '{{ defaultValue }}'), {% block data %}{% endblock %} }"
+    x-effect="updateStepperInput()"
+    {% if isRequired %}aria-required="true"{% endif %}
+    :aria-invalid="isInvalid"
+    {% if hideLabel %}
+        aria-describedby="{{ labelId }}"
+    {% else %}
+        :aria-describedby="isInvalid ? '{{ labelId }} {{ labelId }}__error' : '{{ labelId }}'"
+    {% endif %}
+    role="radiogroup"
+    class="form-element form-stepper--{{ size|default('normal') }}"
+    :class="{'form-stepper--invalid': isInvalid }"
+>
+    {% if hideLabel %}
+        <span id="{{ labelId }}" hidden>{{ label }}</span>
+    {% else %}
+        <div class="form-element__label">
+            <span id="{{ labelId }}">{{ label }}</span>
+            {{ include('partials/form/element-error') }}
+        </div>
+    {% endif %}
+
+    <div>
+        <div class="form-stepper__wrapper">
+            <span
+                id="input-{{ stepperId }}__decrement"
+                aria-label="remove 1"
+                :tabindex="disabled.min ? -1 : 0"
+                role="button"
+                class="form-stepper__button"
+                :class="{'form-stepper__button--disabled': disabled.min || isLoading }"
+                @click="model > {{ minValue }} ? model = Number(model) - 1 : null"
+            >
+                {{ include('partials/ui/icon', { name: 'remove', ariaHidden: true, hiddenLabel: 'partials.form.stepper.decrease'|localize }) }}
+            </span>
+            <input
+                id="input-{{ stepperId }}"
+                x-ref="stepperInput"
+                x-model="model"
+                :disabled="disabled.min && disabled.max || isLoading"
+                :style="{ width: inputWidth }"
+                type="number"
+                name="{{ label }}"
+                class="form-stepper__input"
+                min="{{ minValue }}"
+                max="{{ maxValue }}"
+                {% if isRequired %}required{% endif %}
+                @input.change="event => model = FormStepper.getInputValue(Number(event.target.value), {{ minValue }}, {{ maxValue }}, {{ defaultValue }})"
+            >
+            <span
+                id="input-{{ stepperId }}__increment"
+                aria-label="add 1"
+                :tabindex="disabled.max ? -1 : 0"
+                role="button"
+                class="form-stepper__button"
+                :class="{'form-stepper__button--disabled': disabled.max || isLoading }"
+                @click="model < {{ maxValue }} ? model = Number(model) + 1 : null"
+            >
+                {{ include('partials/ui/icon', { name: 'add', ariaHidden: true, hiddenLabel: 'partials.form.stepper.increase'|localize }) }}
+            </span>
+        </div>
+    </div>
+</div>
+
+{% if request.async == true %}
+</template>
+{% endif %}

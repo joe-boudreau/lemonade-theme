@@ -1,0 +1,36 @@
+<div class="container home-page__container">
+    {{ include('partials/components/text', { heading, text }) }}
+</div>
+
+{% schema %}
+{
+    "heading": {
+        "type": "string"
+    },
+    "text": {
+        "type": "string"
+    }
+}
+{% endschema %}
+
+{% editor %}
+{
+    "name": "Text",
+    "controls": [
+        {
+            "control": "input",
+            "label": "Heading",
+            "value": {
+                "$ref": "#/schema/heading"
+            }
+        },
+        {
+            "control": "textarea",
+            "label": "Text",
+            "value": {
+                "$ref": "#/schema/text"
+            }
+        }
+    ]
+}
+{% endeditor %}

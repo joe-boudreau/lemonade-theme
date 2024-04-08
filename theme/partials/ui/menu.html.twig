@@ -1,0 +1,56 @@
+
+{% if request.async == true %}
+    <link href="{{ 'css/ui/menu.css' | asset_url }}" rel="stylesheet" onload="document.dispatchEvent(new CustomEvent('asset:ready'))" />
+    <script src="{{ 'js/ui/menu.js' | asset_url }}"></script>
+{% else %}
+    {{ register_asset('css/ui/menu.css') }}
+    {{ register_asset('js/ui/menu.js', { defer: false }) }}
+{% endif %}
+
+{% set menuUIDataId = 'menu-ui-data-' ~ random() %}
+<script id="{{ menuUIDataId }}" type="application/json">
+    {{ {
+        menuItems: items,
+        menuTriggerRef,
+    }|json_encode }}
+</script>
+
+<div
+    x-data="{ isReady: !Boolean({{ request.async }}), ...menuUI('{{ menuUIDataId }}'), {% block data %}{% endblock %} }"
+    x-init="initMenuUI()"
+    class="ui-menu {{ menuClasses }}"
+    @asset:ready.document="isReady = true"
+    {% block attributes %}{% endblock %}
+>
+    <div
+        x-show="isReady"
+        x-transition:enter="fade-enter-active"
+        x-transition:enter-start="fade-enter-from"
+        x-transition:enter-end="fade-enter-to"
+        x-transition:leave="fade-leave-active"
+        x-transition:leave-start="fade-leave-from"
+        x-transition:leave-end="fade-leave-to"
+        class="ui-menu--scrollbar custom-scrollbar"
+    >
+        <ul
+            x-ref="menu"
+            tabindex="0"
+            aria-label="menu list"
+            role="listbox"
+            class="ui-menu__list custom-scrollbar-inner"
+            @focus="onMenuItemFocus"
+            @blur="onMenuItemBlur"
+            @keydown.down.prevent="onKeyDown"
+            @keydown.up.prevent="onKeyUp"
+            @keydown.enter.prevent="onKeyEnter"
+        >
+            {% if items|length %}
+                {% for item in items %}
+                    {{ include('partials/ui/menu-item', { index: loop.index, total: items|length, item }) }}
+                {% endfor %}
+            {% else %}
+                {% block menuItems %}{% endblock %}
+            {% endif %}
+        </ul>
+    </div>
+</div>

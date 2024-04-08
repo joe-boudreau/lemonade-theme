@@ -1,0 +1,53 @@
+{% set featuredCategories = [] %}
+{% for item in categories %}
+    {% set featuredCategories = featuredCategories|merge([{ item, template: 'simple' }]) %}
+{% endfor %}
+{% if featuredCategories|length %}
+    <div class="container home-page__container">
+        <div class="home-page__featured-tiles-wrapper">
+            <h2 class="heading-3 heading-with-margin home-page__heading">{{ heading }}</h2>
+
+            {{ include('partials/components/collection/list', { items: featuredCategories, layout: 'carousel', title: heading }) }}
+        </div>
+    </div>
+{% endif %}
+
+{% schema %}
+{
+    "heading": {
+        "type": "string"
+    },
+    "categories": {
+        "type": "category-list"
+    }
+}
+{% endschema %}
+
+{% editor %}
+{
+    "name": "Featured categories",
+    "controls": [
+        {
+            "control": "input",
+            "label": "Heading",
+            "value": {
+                "$ref": "#/schema/heading"
+            }
+        },
+        {
+            "control": "group",
+            "label": "Featured categories",
+            "value": {
+                "controls": [
+                    {
+                        "control": "category-list-chooser",
+                        "value": {
+                            "$ref": "#/schema/categories"
+                        }
+                    }
+                ]
+            }
+        }
+    ]
+}
+{% endeditor %}
