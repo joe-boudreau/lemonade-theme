@@ -8,8 +8,7 @@ This repo uses the [GitHub flow](https://guides.github.com/introduction/flow/).
 
 This repository uses [Conventional Commits](https://www.conventionalcommits.org) for simple yet meaningful commit messages. Not only are they user-friendly, they are also machine-readable for automated release notes and versioning.
 
-
-It has the following formats:
+blahdhd
 
 #### Without scope
 
